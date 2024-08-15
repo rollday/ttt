@@ -4,23 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>井字棋</title>
-    <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "nn1ognnj74");
-    </script>
-    <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?9c22b411b73b8748b03f5e614535bc98";
-      var s = document.getElementsByTagName("script")[0]; 
-      s.parentNode.insertBefore(hm, s);
-    })();
-    </script>
-
     <style>
         body {
             display: flex;
@@ -129,7 +112,7 @@
 
             if (currentPlayer === aiPlayer && gameActive) {
                 aiMoveCount = 0;
-                const bestMove = minimax(boardState, aiPlayer).index;
+                const bestMove = minimax(boardState, aiPlayer, -Infinity, Infinity).index;
                 boardState[bestMove] = aiPlayer;
                 document.querySelector(`.cell[data-index='${bestMove}']`).textContent = aiPlayer;
 
@@ -186,7 +169,7 @@
             aiInfo.textContent = '';
         }
 
-        function minimax(newBoard, player) {
+        function minimax(newBoard, player, alpha, beta) {
             aiMoveCount++;
             const availSpots = newBoard.reduce((acc, val, idx) => {
                 if (val === null) acc.push(idx);
@@ -208,16 +191,22 @@
                 move.index = availSpots[i];
                 newBoard[availSpots[i]] = player;
 
+                let result;
                 if (player === aiPlayer) {
-                    const result = minimax(newBoard, huPlayer);
+                    result = minimax(newBoard, huPlayer, alpha, beta);
                     move.score = result.score;
+                    alpha = Math.max(alpha, move.score);
                 } else {
-                    const result = minimax(newBoard, aiPlayer);
+                    result = minimax(newBoard, aiPlayer, alpha, beta);
                     move.score = result.score;
+                    beta = Math.min(beta, move.score);
                 }
 
                 newBoard[availSpots[i]] = null;
                 moves.push(move);
+
+                // Alpha-Beta 剪枝
+                if (alpha >= beta) break;
             }
 
             let bestMove;
